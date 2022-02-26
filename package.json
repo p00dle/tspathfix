@@ -1,0 +1,11 @@
+{
+  "name": "tspathfix",
+  "version": "0.1.0",
+  "main": "dist/bin.js",
+  "author": "Krzysztof Siuda",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "@types/node": "^17.0.21"
+  }
+}
