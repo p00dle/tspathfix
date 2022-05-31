@@ -80,26 +80,24 @@ function fixPath(importPath, fileAbsoluteDir, config) {
         });
     }
     if (importAbsolutePath !== importPath) {
-        const importRelativePath = importAbsolutePath.replace(config.outDir, '');
-        const fileRelativeDir = fileAbsoluteDir.replace(config.outDir, '');
-        const importIsBelowFile = importRelativePath.includes(fileRelativeDir);
+        const importIsBelowFile = importAbsolutePath.startsWith(fileAbsoluteDir);
         if (importIsBelowFile) {
-            return importRelativePath.replace(fileRelativeDir, '.');
+            return importAbsolutePath.replace(fileAbsoluteDir, '.');
         }
         let dirs = [];
-        let currentDir = fileRelativeDir;
-        while (!importRelativePath.includes(currentDir) && currentDir !== '.') {
+        let currentDir = fileAbsoluteDir;
+        while (!importAbsolutePath.startsWith(currentDir) && currentDir !== '.') {
             dirs.push('..');
             currentDir = path.join(currentDir, '..');
         }
-        return dirs.join('/') + '/' + importRelativePath.replace(currentDir, '');
+        return dirs.join('/') + '/' + importAbsolutePath.replace(currentDir, '');
     }
     else {
         return importPath;
     }
 }
 function fixSlashes(str) {
-    return str.replace(/\\\\/g, '/').replace(/\\/g, '/');
+    return str.replace(/\\\\/g, '/').replace(/\\/g, '/').replace(/\/\//g, '/');
 }
 let filesFound = 0;
 let filesUpdated = 0;
@@ -109,7 +107,7 @@ async function fixFileImports(file, config) {
     processRunning(true);
     filesFound++;
     const fileContent = await fs.readFile(file, { encoding: 'utf8' });
-    const fixedFileContent = fileContent.replace(/(import\s*(type)*\s*{[^}]*}\s*from\s*['"][^'"]+['"])|(require\s*\(\s*['"][^'"]+['"]\s*\))/g, match => {
+    const fixedFileContent = fileContent.replace(/((im|ex)port\s*(type)*\s*{[^}]*}\s*from\s*['"][^'"]+['"])|(require\s*\(\s*['"][^'"]+['"]\s*\))/g, match => {
         return match.replace(/['"][^'"]+['"]/, match => {
             const quote = match[0] === '"' ? '"' : '\'';
             const importPath = match.slice(1, match.length - 1);
